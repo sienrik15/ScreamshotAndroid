@@ -1,12 +1,16 @@
 package com.mtsahakis.mediaprojectiondemo;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.Image;
@@ -16,6 +20,9 @@ import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -23,6 +30,7 @@ import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,7 +39,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
-public class ScreenCaptureImageActivity extends Activity {
+public class ScreenCaptureImageActivity extends AppCompatActivity {
 
     private static final String TAG = ScreenCaptureImageActivity.class.getName();
     private static final int REQUEST_CODE = 100;
@@ -54,6 +62,8 @@ public class ScreenCaptureImageActivity extends Activity {
     private Bitmap bitmap;
     private FileOutputStream fos;
     private OrientationChangeCallback mOrientationChangeCallback;
+    private ImageView ResulScreenshot;
+    int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 120;
 
     private class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
         @Override
@@ -74,11 +84,11 @@ public class ScreenCaptureImageActivity extends Activity {
                     // create bitmap
                     bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                     bitmap.copyPixelsFromBuffer(buffer);
-
+                    /*Drawable drawable = new BitmapDrawable(getResources(),bitmap);
+                    ResulScreenshot.setImageDrawable(drawable);*/
                     // write bitmap to a file
                     fos = new FileOutputStream(STORE_DIRECTORY + "/myscreen_" + IMAGES_PRODUCED + ".png");
                     bitmap.compress(CompressFormat.JPEG, 100, fos);
-
                     IMAGES_PRODUCED++;
                     Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
                 }
@@ -152,9 +162,37 @@ public class ScreenCaptureImageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        int permissionCheck = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        // Here, thisActivity is the current activity
+        if (permissionCheck!= PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
         // call for the projection manager
         mProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-
+        ResulScreenshot = (ImageView) findViewById(R.id.ResulScreenshot);
         // start projection
         Button startButton = (Button) findViewById(R.id.startButton);
         startButton.setOnClickListener(new OnClickListener() {

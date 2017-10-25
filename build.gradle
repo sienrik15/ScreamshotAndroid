@@ -14,11 +14,13 @@ apply plugin: 'com.android.application'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
+    compile 'com.android.support:appcompat-v7:25.0.0'
+
 }
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    buildToolsVersion '25.0.0'
 
     sourceSets {
         main {
@@ -37,3 +39,4 @@ android {
         targetSdkVersion 25
     }
 }
+
